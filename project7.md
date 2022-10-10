@@ -36,7 +36,7 @@ In this project you will implement a solution that consists of following compone
 
 On the diagram below you can see a common pattern where several stateless Web Servers share a common database and also access the same files using [Network File Sytem (NFS)]() as a shared file storage. Even though the NFS server might be located on a completely separate hardware – for Web Servers it look like a local file system from where they can serve the same files.
 
-![3 Tier Application Architecture](../images/3tier-AppArchitecture.png)
+![3 Tier Application Architecture](images/3tier-AppArchitecture.png)
 
 It is important to know what storage solution is suitable for what use cases, for this – you need to answer following questions: what data will be stored, in what format, how this data will be accessed, by whom, from where, how frequently, etc. Base on this you will be able to choose the right storage system for your solution.
 
@@ -51,13 +51,13 @@ It is important to know what storage solution is suitable for what use cases, fo
 
 - Ensure there are 3 **Logical Volumes**. <mark>lv-opt, lv-apps, and lv-logs</mark>
 
-![3 Logical Volumes created](../images/3LV-created.png)
+![3 Logical Volumes created](images/3LV-created.png)
 
-![Formatt disk as xfs](../images/lvm-xfs.png)
+![Formatt disk as xfs](images/lvm-xfs.png)
 
 - Create mount points on /mnt directory for the logical volumes as follow:
 
-![Create mnt folder](../images/lvm-xfs.png)
+![Create mnt folder](images/lvm-xfs.png)
 
 ```
 Mount lv-apps on /mnt/apps – To be used by webservers
@@ -65,7 +65,7 @@ Mount lv-logs on  /mnt/logs – To be used by webserver logs
 Mount lv-opt on  /mnt/opt – To be used by Jenkins server in Project 8
 ```
 
-![Create mount points on /mnt folder](../images/createmountpnts-mntdir.png)
+![Create mount points on /mnt folder](images/createmountpnts-mntdir.png)
 
 4. Install NFS server, configure it to start on reboot and make sure it is up and running
 
@@ -77,7 +77,7 @@ sudo systemctl enable nfs-server.service
 sudo systemctl status nfs-server.service
 ```
 
-![NFS server config](../images/nfs-config.png)
+![NFS server config](images/nfs-config.png)
 
 5. Export the mounts for webservers’ <mark>subnet cidr</mark> to connect as clients. For simplicity, you will install your all three Web Servers inside the same subnet, but in production set up you would probably want to separate each tier inside its own subnet for higher level of security.
 To check your <mark>subnet cidr</mark> – open your EC2 details in AWS web console and locate ‘Networking’ tab and open a Subnet link:
@@ -96,7 +96,7 @@ sudo chmod -R 777 /mnt/opt
 sudo systemctl restart nfs-server.service
 ```
 
-![Webserver permissions](../images/webserver-permission.png)
+![Webserver permissions](images/webserver-permission.png)
 
 Configure access to NFS for clients within the same subnet (example of Subnet CIDR – <mark>172.31.32.0/20</mark> ):
 
@@ -111,18 +111,18 @@ sudo nano /etc/exports
 sudo exportfs -arv
 ```
 
-![NFS clients same subnets](../images/NFSclients-samesubnets.png)
+![NFS clients same subnets](images/NFSclients-samesubnets.png)
 
 
 6. Check which port is used by NFS and open it using Security Groups (add new Inbound Rule)
 
 `rpcinfo -p | grep nfs`
 
-![NFS exports](../images/NFS-exports.png)
+![NFS exports](images/NFS-exports.png)
 
 **Important note:** In order for NFS server to be accessible from your client, you must also open following ports: TCP 111, UDP 111, UDP 2049
 
-![NFS sg inbound rules](../images/inboundrules-nfs.png)
+![NFS sg inbound rules](images/inboundrules-nfs.png)
 
 
 ### STEP 2 — CONFIGURE THE DATABASE SERVER
@@ -131,19 +131,19 @@ By now you should know how to install and configure a MySQL DBMS to work with re
 
 1. Install MySQL server
 
-![Install mysql server](../images/install-mysqlserver.png)
+![Install mysql server](images/install-mysqlserver.png)
 
 2. Create a database and name it <mark>tooling</mark>
 
-![Create DB](../images/createdb-tooling.png)
+![Create DB](images/createdb-tooling.png)
 
 3. Create a database user and name it <mark>webaccess</mark>
 
-![Create DB user](../images/create-dbuser.png)
+![Create DB user](images/create-dbuser.png)
 
 4. Grant permission to <mark>webaccess</mark> user on <mark>tooling</mark> database to do anything only from the webservers <mark>subnet cidr</mark>
 
-![Permission](../images/grant-permission.png)
+![Permission](images/grant-permission.png)
 
 
 ### Step 3 — Prepare the Web Servers
@@ -161,14 +161,14 @@ During the next steps we will do following:
 
 1. Launch a new EC2 instance with RHEL 8 Operating System
 
-![EC2 instance webserver1](../images/ec2instance-webserverREH.png)
+![EC2 instance webserver1](images/ec2instance-webserverREH.png)
 
 
 2. Install NFS client
 
 `sudo yum install nfs-utils nfs4-acl-tools -y`
 
-![install nfs client](../images/install-nfsclient.png)
+![install nfs client](images/install-nfsclient.png)
 
 3. Mount /var/www/ and target the NFS server’s export for apps
 
@@ -177,7 +177,7 @@ During the next steps we will do following:
    sudo mount -t nfs -o rw,nosuid <NFS-Server-Private-IP-Address>:/mnt/apps /var/www
 ```
 
-![create folder and target NFS servers export for apps](../images/mount-targetNFSexports.png)
+![create folder and target NFS servers export for apps](images/mount-targetNFSexports.png)
 
 4. Verify that NFS was mounted successfully by running df -h. Make sure that the changes will persist on Web Server after reboot:
 `sudo nano /etc/fstab`
@@ -186,7 +186,7 @@ add following line
 
 `<NFS-Server-Private-IP-Address>:/mnt/apps /var/www nfs defaults 0 0`
 
-![Add line to /etc/fstab](../images/addline-etcfstab.png)
+![Add line to /etc/fstab](images/addline-etcfstab.png)
 
 5. Install [Remi’s repository](http://www.servermom.org/how-to-enable-remi-repo-on-centos-7-6-and-5/2790/), Apache and PHP
 
